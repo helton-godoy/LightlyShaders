@@ -1,34 +1,42 @@
-# Support Ukraine:
-  - Via United24 platform (the initiative of the President of Ukraine):
-    - [One click donation (credit card, bank transfer or crypto)](https://u24.gov.ua/)
-  - Via National Bank of Ukraine:
-    - [Ukrainian army](https://bank.gov.ua/en/about/support-the-armed-forces)
-    - [Humanitarian aid to Ukraine](https://bank.gov.ua/en/about/humanitarian-aid-to-ukraine)
+# LightlyShaders (helton-godoy fork)
 
-# LightlyShaders v3.0
- This is a fork of Luwx's [LightlyShaders](https://github.com/Luwx/LightlyShaders), which in turn is a fork of [ShapeCorners](https://sourceforge.net/projects/shapecorners/).  
+Fork focused on keeping LightlyShaders usable on both:
 
- **It now also includes a fork of KWin Blur effect to fix the "korner bug".** It is disabled by default, you will have to enter Effects settings, disable the stock blur and enable the one with the "LightlyShaders" lable.
+- `Qt5 + KDE Plasma 5.27` (legacy but still widely used)
+- `Qt6 + KDE Plasma 6.x` (current upstream focus)
 
- This effect works correctly with stock Plasma effects.
+## Compatibility Matrix
 
- ![default](https://github.com/a-parhom/LightlyShaders/blob/plasma6/screenshot.png)
+- `master` -> Qt6 / KF6 / Plasma 6.x
+- `v2.2.1` (tag from upstream history) -> Qt5 / KF5 / Plasma 5.27.x
 
-# Dependencies:
- 
-Plasma >= 6.0.
- 
-You will need qt6, kf6 and kwin development packages.
+For Plasma 5.27 users, this fork includes helper scripts so you do not need to manually switch repos.
 
-# Manual installation
-```
-git clone https://github.com/a-parhom/LightlyShaders
+## Quick Install
 
-cd LightlyShaders;
+### Auto-detect (recommended)
 
-mkdir qt6build; cd qt6build; cmake ../ -DCMAKE_INSTALL_PREFIX=/usr && make && sudo make install
+```bash
+chmod +x scripts/install-auto.sh
+./scripts/install-auto.sh
 ```
 
-## Note
-After some updates of Plasma this plugin may need to be recompiled in order to work with changes introduced to KWin.
- 
+### Force Qt6 / Plasma 6 path
+
+```bash
+chmod +x scripts/install-qt6.sh
+./scripts/install-qt6.sh
+```
+
+### Force Qt5 / Plasma 5.27 path
+
+```bash
+chmod +x scripts/install-qt5.sh
+./scripts/install-qt5.sh
+```
+
+## Notes
+
+- The Qt5 path uses a git worktree based on tag `v2.2.1` and applies the old `libkwin.so` symlink workaround required on some Plasma 5 package layouts.
+- After Plasma/KWin updates, rebuild the effect.
+- On Plasma 5.27, disable stock Blur and enable `LightlyShaders Blur` in KWin Effects for best corner/outline results.
