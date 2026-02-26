@@ -45,5 +45,15 @@
         <entry name="ShadowOffset" type = "Int">
             <default>2</default>
         </entry>
+
+        <entry name="SyntheticShadow" type="Bool">
+            <default>true</default>
+        </entry>
+        <entry name="ShadowBlurRadius" type="Int">
+            <default>28</default>
+        </entry>
+        <entry name="ShadowOpacity" type="Int">
+            <default>60</default>
+        </entry>
     </group>
 </kcfg>

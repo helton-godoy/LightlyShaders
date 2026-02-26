@@ -70,6 +70,7 @@ private:
     };
 
     bool isValidWindow(EffectWindow *w);
+    bool needsSyntheticShadow(EffectWindow *w);
 
     void fillRegion(const QRegion &reg, const QColor &c);
     QRectF scale(const QRectF rect, qreal scaleFactor);
@@ -79,6 +80,10 @@ private:
     int m_size, m_innerOutlineWidth, m_outerOutlineWidth, m_roundness, m_shadowOffset, m_squircleRatio, m_cornersType;
     bool m_innerOutline, m_outerOutline, m_darkTheme, m_disabledForMaximized;
     QColor m_innerOutlineColor, m_outerOutlineColor;
+
+    bool m_syntheticShadow;
+    int m_shadowBlurRadius, m_shadowPadding;
+    float m_shadowOpacity;
     std::unique_ptr<GLShader> m_shader;
     QSize m_corner;
 

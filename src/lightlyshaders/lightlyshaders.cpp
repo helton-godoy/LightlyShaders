@@ -163,6 +163,10 @@ LightlyShadersEffect::reconfigure(ReconfigureFlags flags)
     m_shadowOffset = LightlyShadersConfig::shadowOffset();
     m_squircleRatio = LightlyShadersConfig::squircleRatio();
     m_cornersType = LightlyShadersConfig::cornersType();
+    m_syntheticShadow = LightlyShadersConfig::syntheticShadow();
+    m_shadowBlurRadius = LightlyShadersConfig::shadowBlurRadius();
+    m_shadowOpacity = static_cast<float>(LightlyShadersConfig::shadowOpacity()) / 100.0f;
+    m_shadowPadding = m_shadowBlurRadius + 4;
 
     m_helper->reconfigure();
     m_roundness = m_helper->roundness();
@@ -219,6 +223,15 @@ LightlyShadersEffect::paintScreen(const RenderTarget &renderTarget, const Render
     effects->paintScreen(renderTarget, viewport, mask, region, s);
 }
 
+bool
+LightlyShadersEffect::needsSyntheticShadow(EffectWindow *w)
+{
+    if (!m_syntheticShadow)
+        return false;
+    // Window has no native shadow if expanded == frame geometry
+    return (w->expandedGeometry().size() == w->frameGeometry().size());
+}
+
 void
 LightlyShadersEffect::prePaintWindow(RenderView *view, EffectWindow *w, WindowPrePaintData &data, std::chrono::milliseconds time)
 {
@@ -234,6 +247,16 @@ LightlyShadersEffect::prePaintWindow(RenderView *view, EffectWindow *w, WindowPr
     }
 
     const QRectF geo(w->frameGeometry());
+
+    // Expand paint region for synthetic shadow on CSD windows without native shadow
+    if (needsSyntheticShadow(w)) {
+        int pad = static_cast<int>(m_shadowPadding * m_screens[s].scale);
+        QRectF expanded = geo.adjusted(-pad, -pad, pad, pad);
+        QRegion expandedRegion(expanded.toAlignedRect());
+        data.devicePaint += Region(expandedRegion);
+        data.deviceOpaque -= Region(expandedRegion);
+    }
+
     for (int corner = 0; corner < LSHelper::NTex; ++corner)
     {
         QRegion reg = QRegion(scale(m_helper->m_maskRegions[corner]->boundingRect(), m_screens[s].scale).toRect());
@@ -310,6 +333,10 @@ LightlyShadersEffect::drawWindow(const RenderTarget &renderTarget, const RenderV
     const int drawOuterOutlineLocation = m_shader->uniformLocation("draw_outer_outline");
     const int squircleRatioLocation = m_shader->uniformLocation("squircle_ratio");
     const int isSquircleLocation = m_shader->uniformLocation("is_squircle");
+    const int syntheticShadowLocation = m_shader->uniformLocation("synthetic_shadow");
+    const int shadowBlurRadiusLocation = m_shader->uniformLocation("shadow_blur_radius");
+    const int shadowOpacityLocation = m_shader->uniformLocation("shadow_opacity");
+    const int shadowPaddingLocation = m_shader->uniformLocation("shadow_padding");
     ShaderManager *sm = ShaderManager::instance();
     sm->pushShader(m_shader.get());
 
@@ -327,6 +354,13 @@ LightlyShadersEffect::drawWindow(const RenderTarget &renderTarget, const RenderV
     m_shader->setUniform(drawOuterOutlineLocation, m_outerOutline);
     m_shader->setUniform(squircleRatioLocation, m_squircleRatio);
     m_shader->setUniform(isSquircleLocation, (m_cornersType == LSHelper::SquircledCorners));
+
+    // Synthetic shadow uniforms
+    bool wantsSynth = needsSyntheticShadow(w);
+    m_shader->setUniform(syntheticShadowLocation, wantsSynth);
+    m_shader->setUniform(shadowBlurRadiusLocation, float(m_shadowBlurRadius * m_screens[s].scale));
+    m_shader->setUniform(shadowOpacityLocation, m_shadowOpacity);
+    m_shader->setUniform(shadowPaddingLocation, float(m_shadowPadding * m_screens[s].scale));
 
     glActiveTexture(GL_TEXTURE0);
 
