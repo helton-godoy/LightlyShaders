@@ -139,7 +139,7 @@ LightlyShadersEffect::windowMaximizedStateChanged(EffectWindow *w, bool horizont
 }
 
 void
-LightlyShadersEffect::setRoundness(const int r, Output *s)
+LightlyShadersEffect::setRoundness(const int r, LogicalOutput *s)
 {
     m_size = r;
     m_screens[s].sizeScaled = float(r)*m_screens[s].scale;
@@ -179,7 +179,7 @@ LightlyShadersEffect::reconfigure(ReconfigureFlags flags)
     }
 
     const auto screens = effects->screens();
-    for(Output *s : screens)
+    for(LogicalOutput *s : screens)
     {
         if (effects->waylandDisplay() == nullptr) {
             s = nullptr;
@@ -195,7 +195,7 @@ LightlyShadersEffect::reconfigure(ReconfigureFlags flags)
 }
 
 void
-LightlyShadersEffect::paintScreen(const RenderTarget &renderTarget, const RenderViewport &viewport, int mask, const QRegion &region, Output *s)
+LightlyShadersEffect::paintScreen(const RenderTarget &renderTarget, const RenderViewport &viewport, int mask, const Region &region, LogicalOutput *s)
 {
     bool set_roundness = false;
 
@@ -220,15 +220,15 @@ LightlyShadersEffect::paintScreen(const RenderTarget &renderTarget, const Render
 }
 
 void
-LightlyShadersEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, std::chrono::milliseconds time)
+LightlyShadersEffect::prePaintWindow(RenderView *view, EffectWindow *w, WindowPrePaintData &data, std::chrono::milliseconds time)
 {
     if (!isValidWindow(w) )
     {
-        effects->prePaintWindow(w, data, time);
+    effects->prePaintWindow(view, w, data, time);
         return;
     }
 
-    Output *s = w->screen();
+    LogicalOutput *s = w->screen();
     if (effects->waylandDisplay() == nullptr) {
         s = nullptr;
     }
@@ -254,10 +254,10 @@ LightlyShadersEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, 
                 break;
         }
 
-        data.opaque -= reg;
+        data.deviceOpaque -= Region(reg);
     }
 
-    effects->prePaintWindow(w, data, time);
+    effects->prePaintWindow(view, w, data, time);
 }
 
 bool
@@ -274,9 +274,9 @@ LightlyShadersEffect::isValidWindow(EffectWindow *w)
 }
 
 void
-LightlyShadersEffect::drawWindow(const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const QRegion &region, WindowPaintData &data)
+LightlyShadersEffect::drawWindow(const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow *w, int mask, const Region &region, WindowPaintData &data)
 {    
-    QRectF screen = viewport.renderRect().toRect();
+    QRectF screen = viewport.renderRect();
 
     if (!isValidWindow(w) || (!screen.intersects(w->frameGeometry()) && !(mask & PAINT_WINDOW_TRANSFORMED)) )
     {
@@ -284,7 +284,7 @@ LightlyShadersEffect::drawWindow(const RenderTarget &renderTarget, const RenderV
         return;
     }
 
-    Output *s = w->screen();
+    LogicalOutput *s = w->screen();
     if (effects->waylandDisplay() == nullptr) {
         s = nullptr;
     }

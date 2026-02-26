@@ -39,12 +39,12 @@ public:
     static bool supported();
     static bool enabledByDefault();
 
-    void setRoundness(const int r, Output *s);
+    void setRoundness(const int r, LogicalOutput *s);
 
     void reconfigure(ReconfigureFlags flags) override;
-    void paintScreen(const RenderTarget &renderTarget, const RenderViewport &viewport, int mask, const QRegion &region, Output *s) override;
-    void prePaintWindow(EffectWindow* w, WindowPrePaintData& data, std::chrono::milliseconds time) override;
-    void drawWindow(const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow* w, int mask, const QRegion& region, WindowPaintData& data) override;
+    void paintScreen(const RenderTarget &renderTarget, const RenderViewport &viewport, int mask, const Region &region, LogicalOutput *s) override;
+    void prePaintWindow(RenderView *view, EffectWindow* w, WindowPrePaintData& data, std::chrono::milliseconds time) override;
+    void drawWindow(const RenderTarget &renderTarget, const RenderViewport &viewport, EffectWindow* w, int mask, const Region& region, WindowPaintData& data) override;
     virtual int requestedEffectChainPosition() const override { return 99; }
 
 protected Q_SLOTS:
@@ -82,7 +82,7 @@ private:
     std::unique_ptr<GLShader> m_shader;
     QSize m_corner;
 
-    std::unordered_map<Output *, LSScreenStruct> m_screens;
+    std::unordered_map<LogicalOutput *, LSScreenStruct> m_screens;
     QMap<EffectWindow *, LSWindowStruct> m_windows;
 };
 

@@ -22,7 +22,7 @@ class LIBLSHELPER_EXPORT LSHelper: public QObject
 		void reconfigure();
 		QPainterPath superellipse(float size, int n, int translate);
     	QImage genMaskImg(int size, bool mask, bool outer_rect);
-		void roundBlurRegion(EffectWindow *w, QRegion *region);
+ 		void roundBlurRegion(EffectWindow *w, QRegion *region);
 		bool isManagedWindow(EffectWindow *w);
 		void blurWindowAdded(EffectWindow *w);
 		void blurWindowDeleted(EffectWindow *w);
