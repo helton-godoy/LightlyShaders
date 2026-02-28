@@ -26,7 +26,6 @@ jobs:
             -Dsonar.sources=src
             -Dsonar.sourceEncoding=UTF-8
             -Dsonar.exclusions=build/**,build-qt6/**,**/*.so,**/*.frag,**/*.vert,**/*.qrc,**/*.sh
-            -Dsonar.cfamily.analysisCache.mode=disabled
 
   # Job separado para compilação (sem falhar o workflow)
   build-check:
