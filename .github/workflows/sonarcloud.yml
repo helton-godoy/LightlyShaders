@@ -8,12 +8,42 @@ on:
 
 jobs:
   sonarcloud:
-    name: SonarCloud
+    name: SonarCloud with C/C++ Analysis
     runs-on: ubuntu-latest
+    container:
+      image: kdeorg/plasma-desktop:latest
+      options: --user root
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Install build dependencies
+        run: |
+          apt-get update
+          apt-get install -y cmake g++ extra-cmake-modules \
+            qt6-base-dev qt6-base-dev-tools \
+            libkf6config-dev libkf6coreaddons-dev libkf6windowsystem-dev \
+            libepoxy-dev libxkbcommon-dev libxcb1-dev \
+            libx11-dev libxext-dev libxrender-dev libxtst-dev \
+            wget unzip
+
+      - name: Install KWin development files
+        run: |
+          # KWin dev packages podem precisar de repositório específico
+          apt-get install -y kwin-dev || echo "KWin dev não disponível, tentando alternativa"
+
+      - name: Download and install build-wrapper
+        run: |
+          wget -q https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
+          unzip -q build-wrapper-linux-x86.zip
+          mv build-wrapper-linux-x86-* build-wrapper
+
+      - name: Build with build-wrapper
+        run: |
+          mkdir -p build
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          ./build-wrapper/build-wrapper-linux-x86-64 --out-dir bw-output cmake --build build --parallel $(nproc)
 
       - name: Run SonarCloud Scanner
         uses: SonarSource/sonarcloud-github-action@v2
@@ -26,25 +56,4 @@ jobs:
             -Dsonar.sources=src
             -Dsonar.sourceEncoding=UTF-8
             -Dsonar.exclusions=build/**,build-qt6/**,**/*.so,**/*.frag,**/*.vert,**/*.qrc,**/*.sh
-            -Dsonar.cfamily.analysisCache.mode=disabled
-
-  # Job separado para compilação (sem falhar o workflow)
-  build-check:
-    name: Build Check (Optional)
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake g++ libxtst-dev libx11-dev libxext-dev libxrender-dev libxkbcommon-dev libxcb1-dev libepoxy-dev
-          echo "Nota: Pacotes KF6/Qt6 e KWin não estão disponíveis nos repositórios Ubuntu"
-          echo "A compilação completa requer KDE Neon ou Arch Linux"
-
-      - name: Check CMake configuration
-        run: |
-          mkdir -p build
-          # Tentar configurar, mas não falhar se faltar dependências
-          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release || echo "CMake falhou - dependências KF6/Qt6 não disponíveis"
+            -Dsonar.cfamily.build-wrapper-output=bw-output
