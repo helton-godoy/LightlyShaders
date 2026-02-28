@@ -7,3 +7,5 @@ build-qt6
 cmake-build*
 qt6build
 .worktrees/
+.scannerwork/
+.sonarlint/
