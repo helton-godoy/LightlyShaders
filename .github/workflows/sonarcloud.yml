@@ -1,4 +1,4 @@
-name: SonarCloud Analysis
+name: SonarCloud Code Analysis
 
 on:
   push:
@@ -16,7 +16,7 @@ jobs:
           fetch-depth: 0
 
       - name: Run SonarCloud Scanner
-        uses: SonarSource/sonarcloud-github-action@master
+        uses: SonarSource/sonarcloud-github-action@v2
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
